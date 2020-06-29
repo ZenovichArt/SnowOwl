@@ -35,6 +35,7 @@ public class MainMenu extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 server = new Server();
+                MainMenu.super.dispose();
                 server.startRunning();
             }
         });
@@ -45,6 +46,7 @@ public class MainMenu extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 client = new Client("127.0.0.1");
+                MainMenu.super.dispose();
                 client.startRunning();
             }
         });
