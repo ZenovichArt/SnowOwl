@@ -23,7 +23,6 @@ public class MainMenu extends JFrame {
                 new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         name = event.getActionCommand();
-                        System.out.println(name);
                         username.setEditable(false);
                     }
                 }
