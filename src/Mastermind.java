@@ -4,8 +4,8 @@ public class Mastermind {
 
     public static void main(String[] args) {
 
-        MainMenu testMenu = new MainMenu();
-        testMenu.setVisible(true);
-        testMenu.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        MainMenu snowOwlMenu = new MainMenu();
+        snowOwlMenu.setVisible(true);
+        snowOwlMenu.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 }

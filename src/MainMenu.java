@@ -5,7 +5,8 @@ import java.awt.event.ActionListener;
 
 public class MainMenu extends JFrame {
 
-    public String name;
+    private static String name;
+    //public String name;
     private JTextField username;
     private JButton serverButton;
     private JButton clientButton;
@@ -15,9 +16,9 @@ public class MainMenu extends JFrame {
     public MainMenu() {
 
         super("Snow Owl");
+        setSize(300, 100);
         username = new JTextField();
         username.setEditable(true);
-        setSize(300, 100);
         add(username, BorderLayout.NORTH);
         username.addActionListener(
                 new ActionListener() {
@@ -33,9 +34,11 @@ public class MainMenu extends JFrame {
         serverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                server = new Server();
                 MainMenu.super.dispose();
+                server = new Server();
+                server.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 server.startRunning();
+
             }
         });
 
@@ -44,11 +47,17 @@ public class MainMenu extends JFrame {
         clientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                client = new Client("127.0.0.1");
-                MainMenu.super.dispose();
+                //MainMenu.super.dispose();
+                dispose();
+                client = new Client("192.168.0.180");
+                client.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 client.startRunning();
             }
         });
 
+    }
+
+    public static String getNickname() {
+        return name;
     }
 }
