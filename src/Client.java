@@ -1,7 +1,12 @@
+/**
+ * Created by ArtemZ on 28.06.20.
+ */
+
 import java.io.*;
 import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Scanner;
 import javax.swing.*;
 
 public class Client extends JFrame {
@@ -14,17 +19,17 @@ public class Client extends JFrame {
     private String serverIP;
     public Socket connection;
 
-    public Client (String host) {
+    public Client (String host) throws IOException {
         super("Snow Owl");
         serverIP = host;
         userText = new JTextField();
         userText.setEditable(false);
         userText.addActionListener(
                 new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        sendMessage(event.getActionCommand());
-                        userText.setText("");
-                    }
+                        public void actionPerformed(ActionEvent event) {
+                            sendMessage(event.getActionCommand());
+                            userText.setText("");
+                        }
                 }
         );
         add(userText, BorderLayout.NORTH);
@@ -44,7 +49,7 @@ public class Client extends JFrame {
         } catch (IOException ioException) {
             ioException.printStackTrace();
         } finally {
-            closeCrap();
+            shutdown();
         }
     }
 
@@ -60,45 +65,51 @@ public class Client extends JFrame {
         output.flush();
         input = new ObjectInputStream(connection.getInputStream());
         showMessage("Streams connected");
-        showMessage("\nConnection succeed \n Enjoy");
+        showMessage("\nConnection succeed \n");
     }
 
     private void whileChatting() throws IOException {
         ableToType(true);
+        historyDownload();
         do {
             try {
                 message = (String) input.readObject();
-                showMessage("\n" + message);
+                checkSendFile(message);
+                showMessage("\nServer - " + message);
+                historyUpload("\nServer - " + message);
             } catch (ClassNotFoundException classNotFoundException) {
                 showMessage("\nUnknown object type");
             }
 
-        } while (!message.equals(MainMenu.getNickname() + " - .bye"));
+        } while (!message.equals(".bye"));
     }
 
-    private void closeCrap() {
+    public void shutdown() {
         showMessage("Closing everything");
         ableToType(false);
         try {
             output.close();
             input.close();
             connection.close();
+            dispose();
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
 
-    private  void sendMessage(String message) {
+    private void sendMessage(String message) {
         try {
-            output.writeObject(MainMenu.getNickname() + " - " + message);
+            output.writeObject(message);
             output.flush();
-            showMessage("\n" + MainMenu.getNickname() + " - " + message);
+            checkSendFile(message);
+            historyUpload("\nClient - " + message);
+            showMessage("\nClient - " + message);
         } catch (IOException ioException) {
             chatWindow.append("\n SENDING ERROR");
         }
     }
 
-    private void showMessage(final String m) {
+    public void showMessage(final String m) {
         SwingUtilities.invokeLater(
                 new Runnable() {
                     public void run() {
@@ -118,7 +129,30 @@ public class Client extends JFrame {
         );
     }
 
+    File historyFile = new File("/Users/MacBook/IdeaProjects/SnowOwl/history.log");
+    Scanner scanner = new Scanner(historyFile);
+    FileWriter fileWriter = new FileWriter(historyFile, true);
 
+    private void historyUpload (String message) throws IOException {
+        if (message.charAt(0) == '\n')
+            fileWriter.write(message.substring(1) + "\n");
+        else
+            fileWriter.write(message + "\n");
+        fileWriter.flush();
+    }
+
+    private void historyDownload () {
+        showMessage("\nHistory of previous messages:\n");
+        while (scanner.hasNextLine()) {
+            showMessage(scanner.nextLine() + "\n");
+        }
+        showMessage("\n");
+    }
+
+    private void checkSendFile (String message) throws IOException {
+        if (message.equals(".send file"))
+            ClientFile.ClientFileOperation(serverIP);
+    }
 
 
 }

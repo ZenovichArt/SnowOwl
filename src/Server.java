@@ -1,7 +1,12 @@
+/**
+ * Created by ArtemZ on 28.06.20.
+ */
+
 import java.io.*;
 import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Scanner;
 import javax.swing.*;
 
 public class Server extends JFrame {
@@ -14,7 +19,7 @@ public class Server extends JFrame {
     private Socket connection;
 
 
-    public Server() {
+    public Server() throws IOException {
         super("Snow Owl");
         userText = new JTextField();
         userText.setEditable(false);
@@ -68,27 +73,31 @@ public class Server extends JFrame {
         showMessage("\n Streams are now setup \n");
     }
 
+    //during the chat conversation
     private void whileChatting() throws IOException {
-        String message = " Connection succeed \n";
-        sendMessage(message);
+        String message = "";
+        historyDownload();
         ableToType(true);
         do{
             try{
                 message = (String) input.readObject();
-                showMessage("\n" + message);
+                checkSendFile(message);
+                showMessage("\nClient - " + message);
+                historyUpload("Client - " + message);
             }catch(ClassNotFoundException classNotFoundException) {
                 showMessage("The user has sent an unknown object");
             }
-        }while(!message.equals(MainMenu.getNickname() + " - .bye"));
+        }while(!message.equals(".bye"));
     }
 
     public void closeConnection() {
         showMessage("\n Closing Connections... \n");
         ableToType(false);
         try{
-            output.close();
-            input.close();
+            output.close(); //Closes the output path to the client
+            input.close(); //Closes the input path to the server, from the client.
             connection.close();
+            dispose();
         }catch(IOException ioException){
             ioException.printStackTrace();
         }
@@ -97,9 +106,13 @@ public class Server extends JFrame {
 
     private void sendMessage(String message){
         try{
-            output.writeObject(MainMenu.getNickname() + " - " + message);
+            output.writeObject(message);
             output.flush();
-            showMessage("\n" + MainMenu.getNickname() + " - " + message);
+
+            checkSendFile(message);
+
+            historyUpload("\nServer - " + message);
+            showMessage("\nServer - " + message);
         }catch(IOException ioException){
             chatWindow.append("\n ERROR: CANNOT SEND MESSAGE, PLEASE RETRY");
         }
@@ -125,5 +138,32 @@ public class Server extends JFrame {
                 }
         );
     }
+
+    File historyFile = new File("/Users/artemzenovich/Downloads/chatRoom/history.log");
+    Scanner scanner = new Scanner(historyFile);
+    FileWriter fileWriter = new FileWriter(historyFile, true);
+
+    private void historyUpload (String message) throws IOException {
+        if (message.charAt(0) == '\n')
+            fileWriter.write(message.substring(1) + "\n");
+        else
+            fileWriter.write(message + "\n");
+        fileWriter.flush();
+    }
+
+    private void historyDownload() {
+        showMessage("\n History of previous messages:\n");
+        while (scanner.hasNextLine())
+            showMessage(scanner.nextLine() + "\n");
+        showMessage("\n");
+    }
+
+    private void checkSendFile(String message) throws IOException {
+        if (message.equals(".send file"))
+            ServerFiles.ServerFilesOperation();
+    }
+
+
+
 
 }
